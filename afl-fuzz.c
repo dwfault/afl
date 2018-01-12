@@ -5095,7 +5095,7 @@ static u8 fuzz_one(char** argv) {
 #define FLIP_BIT(_ar, _b) do { \
     u8* _arf = (u8*)(_ar); \
     u32 _bf = (_b); \
-    _arf[(_bf) >> 3] ^= (128 >> ((_bf) & 7)); \
+    _arf[(_bf) >> 3] ^= ( 64 >> ((_bf) & 7)); \
   } while (0)
 
   /* Single walking bit. */
@@ -5288,7 +5288,7 @@ static u8 fuzz_one(char** argv) {
 
     stage_cur_byte = stage_cur;
 
-    out_buf[stage_cur] ^= 0xFF;
+    out_buf[stage_cur] ^= 0x7F;
 
     if (common_fuzz_stuff(argv, out_buf, len)) goto abandon_entry;
 
@@ -5316,7 +5316,7 @@ static u8 fuzz_one(char** argv) {
 
     }
 
-    out_buf[stage_cur] ^= 0xFF;
+    out_buf[stage_cur] ^= 0x7F;
 
   }
 
@@ -5366,12 +5366,12 @@ static u8 fuzz_one(char** argv) {
 
     stage_cur_byte = i;
 
-    *(u16*)(out_buf + i) ^= 0xFFFF;
+    *(u16*)(out_buf + i) ^= 0x7F7F;
 
     if (common_fuzz_stuff(argv, out_buf, len)) goto abandon_entry;
     stage_cur++;
 
-    *(u16*)(out_buf + i) ^= 0xFFFF;
+    *(u16*)(out_buf + i) ^= 0x7F7F;
 
 
   }
@@ -5403,12 +5403,12 @@ static u8 fuzz_one(char** argv) {
 
     stage_cur_byte = i;
 
-    *(u32*)(out_buf + i) ^= 0xFFFFFFFF;
+    *(u32*)(out_buf + i) ^= 0x7F7F7F7F;
 
     if (common_fuzz_stuff(argv, out_buf, len)) goto abandon_entry;
     stage_cur++;
 
-    *(u32*)(out_buf + i) ^= 0xFFFFFFFF;
+    *(u32*)(out_buf + i) ^= 0x7F7F7F7F;
 
   }
 
@@ -5459,7 +5459,7 @@ skip_bitflip:
       if (!could_be_bitflip(r)) {
 
         stage_cur_val = j;
-        out_buf[i] = orig + j;
+        out_buf[i] = (orig + j) & 0x7F;
 
         if (common_fuzz_stuff(argv, out_buf, len)) goto abandon_entry;
         stage_cur++;
@@ -5471,14 +5471,14 @@ skip_bitflip:
       if (!could_be_bitflip(r)) {
 
         stage_cur_val = -j;
-        out_buf[i] = orig - j;
+        out_buf[i] = (orig - j) & 0x7F;
 
         if (common_fuzz_stuff(argv, out_buf, len)) goto abandon_entry;
         stage_cur++;
 
       } else stage_max--;
 
-      out_buf[i] = orig;
+      out_buf[i] = orig & 0x7F;
 
     }
 
@@ -5530,7 +5530,7 @@ skip_bitflip:
       if ((orig & 0xff) + j > 0xff && !could_be_bitflip(r1)) {
 
         stage_cur_val = j;
-        *(u16*)(out_buf + i) = orig + j;
+        *(u16*)(out_buf + i) = (orig + j) & 0x7F7F;
 
         if (common_fuzz_stuff(argv, out_buf, len)) goto abandon_entry;
         stage_cur++;
@@ -5540,7 +5540,7 @@ skip_bitflip:
       if ((orig & 0xff) < j && !could_be_bitflip(r2)) {
 
         stage_cur_val = -j;
-        *(u16*)(out_buf + i) = orig - j;
+        *(u16*)(out_buf + i) = (orig - j) & 0x7F7F;
 
         if (common_fuzz_stuff(argv, out_buf, len)) goto abandon_entry;
         stage_cur++;
@@ -5555,7 +5555,7 @@ skip_bitflip:
       if ((orig >> 8) + j > 0xff && !could_be_bitflip(r3)) {
 
         stage_cur_val = j;
-        *(u16*)(out_buf + i) = SWAP16(SWAP16(orig) + j);
+        *(u16*)(out_buf + i) = SWAP16(SWAP16(orig) + j) & 0x7F7F;
 
         if (common_fuzz_stuff(argv, out_buf, len)) goto abandon_entry;
         stage_cur++;
@@ -5565,14 +5565,14 @@ skip_bitflip:
       if ((orig >> 8) < j && !could_be_bitflip(r4)) {
 
         stage_cur_val = -j;
-        *(u16*)(out_buf + i) = SWAP16(SWAP16(orig) - j);
+        *(u16*)(out_buf + i) = SWAP16(SWAP16(orig) - j) & 0x7F7F;
 
         if (common_fuzz_stuff(argv, out_buf, len)) goto abandon_entry;
         stage_cur++;
 
       } else stage_max--;
 
-      *(u16*)(out_buf + i) = orig;
+      *(u16*)(out_buf + i) = orig & 0x7F7F;
 
     }
 
@@ -5623,7 +5623,7 @@ skip_bitflip:
       if ((orig & 0xffff) + j > 0xffff && !could_be_bitflip(r1)) {
 
         stage_cur_val = j;
-        *(u32*)(out_buf + i) = orig + j;
+        *(u32*)(out_buf + i) = (orig + j) & 0x7F7F7F7F;
 
         if (common_fuzz_stuff(argv, out_buf, len)) goto abandon_entry;
         stage_cur++;
@@ -5633,7 +5633,7 @@ skip_bitflip:
       if ((orig & 0xffff) < j && !could_be_bitflip(r2)) {
 
         stage_cur_val = -j;
-        *(u32*)(out_buf + i) = orig - j;
+        *(u32*)(out_buf + i) = (orig - j) & 0x7F7F7F7F;
 
         if (common_fuzz_stuff(argv, out_buf, len)) goto abandon_entry;
         stage_cur++;
@@ -5647,7 +5647,7 @@ skip_bitflip:
       if ((SWAP32(orig) & 0xffff) + j > 0xffff && !could_be_bitflip(r3)) {
 
         stage_cur_val = j;
-        *(u32*)(out_buf + i) = SWAP32(SWAP32(orig) + j);
+        *(u32*)(out_buf + i) = SWAP32(SWAP32(orig) + j) & 0x7F7F7F7F;
 
         if (common_fuzz_stuff(argv, out_buf, len)) goto abandon_entry;
         stage_cur++;
@@ -5657,14 +5657,14 @@ skip_bitflip:
       if ((SWAP32(orig) & 0xffff) < j && !could_be_bitflip(r4)) {
 
         stage_cur_val = -j;
-        *(u32*)(out_buf + i) = SWAP32(SWAP32(orig) - j);
+        *(u32*)(out_buf + i) = SWAP32(SWAP32(orig) - j) & 0x7F7F7F7F;
 
         if (common_fuzz_stuff(argv, out_buf, len)) goto abandon_entry;
         stage_cur++;
 
       } else stage_max--;
 
-      *(u32*)(out_buf + i) = orig;
+      *(u32*)(out_buf + i) = orig & 0x7F7F7F7F;
 
     }
 
